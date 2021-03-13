@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+service CpuTempService {
+	rpc cpuTemp (CpuTempReq) returns (CpuTempResp) {}
+}
+
+message CpuTempReq {
+	
+}
+
+message CpuTempResp {
+	string cpuTempData = 1;
+}

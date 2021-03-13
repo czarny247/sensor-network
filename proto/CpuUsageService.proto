@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+service CpuUsageService {
+	rpc cpuUsage (CpuUsageReq) returns (CpuUsageResp) {}
+}
+
+message CpuUsageReq {
+	
+}
+
+message CpuUsageResp {
+	string cpuUsageData = 1;
+}
