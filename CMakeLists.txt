@@ -21,61 +21,47 @@ execute_process(COMMAND
 		${CMAKE_SOURCE_DIR}/proto/CpuTempService.proto
 		${CMAKE_SOURCE_DIR}/proto/CpuUsageService.proto)
 
-add_executable(sensors-xberry-platform 
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	set(TEMPERATURE_COMMAND "osx-cpu-temp")
+endif()
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	set(TEMPERATURE_COMMAND "${CMAKE_SOURCE_DIR}/scripts/linux_temp.sh")
+endif()
+
+configure_file(sensor/src/SystemCommands.hpp.in sensor/src/SystemCommands.hpp)
+
+add_executable(platform-service 
 	${CMAKE_SOURCE_DIR}/platform/src/main.cpp
 	${PROJECT_BINARY_DIR}/CpuTempService.pb.cc
 	${PROJECT_BINARY_DIR}/CpuTempService.grpc.pb.cc
 	${PROJECT_BINARY_DIR}/CpuUsageService.pb.cc
 	${PROJECT_BINARY_DIR}/CpuUsageService.grpc.pb.cc)
 
-target_include_directories(sensors-xberry-platform 
+target_include_directories(platform-service
 	PRIVATE
 	    ${Protobuf_INCLUDE_DIRS}
 		${CMAKE_SOURCE_DIR}/platform/src
 		${PROJECT_BINARY_DIR})
-target_link_libraries(sensors-xberry-platform
+target_link_libraries(platform-service
 	gRPC::grpc++
 	gRPC::grpc++_reflection
     protobuf::libprotobuf)
 
-add_executable(sensors-xberry-sensor 
+add_executable(sensor-service
 	${CMAKE_SOURCE_DIR}/sensor/src/main.cpp
 	${PROJECT_BINARY_DIR}/CpuTempService.pb.cc
 	${PROJECT_BINARY_DIR}/CpuTempService.grpc.pb.cc
 	${PROJECT_BINARY_DIR}/CpuUsageService.pb.cc
 	${PROJECT_BINARY_DIR}/CpuUsageService.grpc.pb.cc)
 
-target_include_directories(sensors-xberry-sensor 
+target_include_directories(sensor-service
 	PRIVATE
 		${Protobuf_INCLUDE_DIRS}
 		${CMAKE_SOURCE_DIR}/sensor/src
-		${PROJECT_BINARY_DIR})
-target_link_libraries(sensors-xberry-sensor 
+		${PROJECT_BINARY_DIR}
+		${PROJECT_BINARY_DIR}/sensor/src)
+target_link_libraries(sensor-service
 	gRPC::grpc++
 	gRPC::grpc++_reflection
     protobuf::libprotobuf)
-
-add_executable(sensors-xberry-client 
-	${CMAKE_SOURCE_DIR}/client/src/main.cpp
-	${PROJECT_BINARY_DIR}/CpuTempService.pb.cc
-	${PROJECT_BINARY_DIR}/CpuTempService.grpc.pb.cc
-	${PROJECT_BINARY_DIR}/CpuUsageService.pb.cc
-	${PROJECT_BINARY_DIR}/CpuUsageService.grpc.pb.cc)
-
-target_include_directories(sensors-xberry-client 
-	PRIVATE
-		${Protobuf_INCLUDE_DIRS}
-		${CMAKE_SOURCE_DIR}/client/src
-		${PROJECT_BINARY_DIR})
-target_link_libraries(sensors-xberry-client
-	gRPC::grpc++
-	gRPC::grpc++_reflection
-    protobuf::libprotobuf)
-
-#add installation on mac - brew install osx-cpu-temp
-#to use on linux / bsd - ?
-#brew install protobuf - already in grpc
-#brew install grpc
-#find path to grpc plugin
-#add configuration file to set cmd based on host os
-

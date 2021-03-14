@@ -13,6 +13,8 @@
 #include <sstream>
 #include <fstream>
 
+#include "SystemCommands.hpp"
+
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
@@ -24,8 +26,9 @@ class CpuTempServiceImpl final : public CpuTempService::Service
 Status cpuTemp(ServerContext* context, const CpuTempReq* request, 
 	CpuTempResp* response) override
 {
-	//set cmd based on host os
-	std::system("osx-cpu-temp > tmp.txt");
+	std::string cmd = getTemperatureCommand() + " > tmp.txt";
+	std::system(cmd.c_str());
+
 	std::stringstream ss;
 	ss << std::ifstream("tmp.txt").rdbuf();
 	response->set_cputempdata(ss.str());
@@ -68,9 +71,6 @@ void RunService(const std::string& serviceName, const std::string& serviceAddres
 		return;
 	}
 
-	//std::string server_address("0.0.0.0:50051");
-	//CpuTempServiceImpl service;
-
 	grpc::EnableDefaultHealthCheckService(true);
 	grpc::reflection::InitProtoReflectionServerBuilderPlugin();
 	ServerBuilder builder;
@@ -81,8 +81,6 @@ void RunService(const std::string& serviceName, const std::string& serviceAddres
 	server->Wait();
 
 }
-
-//choose which service to run based on parameters + set address
 
 void printHelp()
 {
